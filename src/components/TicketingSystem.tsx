@@ -1,12 +1,24 @@
 import { useState, useEffect } from "react";
 import "./TicketingSystem.css";
 
+// Define the Ticket type
+interface Ticket {
+  id: number;
+  projectName: string;
+  description: string;
+  priority: "Low" | "Medium" | "High";
+  status: "Open" | "In Progress" | "Closed";
+  assignedTo: string;
+  dueDate: string;
+}
+
 export default function TicketingSystem() {
-  const [tickets, setTickets] = useState(() => {
+  const [tickets, setTickets] = useState<Ticket[]>(() => {
     const savedTickets = localStorage.getItem("tickets");
     return savedTickets ? JSON.parse(savedTickets) : [];
   });
-  const [newTicket, setNewTicket] = useState({
+  const [newTicket, setNewTicket] = useState<Ticket>({
+    id: 0,
     projectName: "",
     description: "",
     priority: "Medium",
@@ -14,42 +26,44 @@ export default function TicketingSystem() {
     assignedTo: "",
     dueDate: "",
   });
-  const [filter, setFilter] = useState({ status: "", priority: "" });
-  const [searchTerm, setSearchTerm] = useState("");
-  const [sortBy, setSortBy] = useState("dueDate");
+  const [filter, setFilter] = useState<{ status: string; priority: string }>({ status: "", priority: "" });
+  const [searchTerm, setSearchTerm] = useState<string>("");
+  const [sortBy, setSortBy] = useState<keyof Ticket>("dueDate");
 
   useEffect(() => {
     localStorage.setItem("tickets", JSON.stringify(tickets));
   }, [tickets]);
 
-  const handleInputChange = (e) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setNewTicket((prev) => ({ ...prev, [name]: value }));
   };
 
   const addTicket = () => {
     setTickets([...tickets, { ...newTicket, id: Date.now() }]);
-    setNewTicket({ projectName: "", description: "", priority: "Medium", status: "Open", assignedTo: "", dueDate: "" });
+    setNewTicket({ id: 0, projectName: "", description: "", priority: "Medium", status: "Open", assignedTo: "", dueDate: "" });
   };
 
-  const handleFilterChange = (e) => {
+  const handleFilterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFilter((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSortChange = (e) => {
-    setSortBy(e.target.value);
+  const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSortBy(e.target.value as keyof Ticket);
   };
 
-  const handleSearchChange = (e) => {
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value.toLowerCase());
   };
 
-  const filteredTickets = tickets.filter(ticket =>
-    (filter.status ? ticket.status === filter.status : true) &&
-    (filter.priority ? ticket.priority === filter.priority : true) &&
-    (searchTerm ? ticket.projectName.toLowerCase().includes(searchTerm) || ticket.description.toLowerCase().includes(searchTerm) : true)
-  ).sort((a, b) => a[sortBy] > b[sortBy] ? 1 : -1);
+  const filteredTickets = tickets
+    .filter((ticket: Ticket) =>
+      (filter.status ? ticket.status === filter.status : true) &&
+      (filter.priority ? ticket.priority === filter.priority : true) &&
+      (searchTerm ? ticket.projectName.toLowerCase().includes(searchTerm) || ticket.description.toLowerCase().includes(searchTerm) : true)
+    )
+    .sort((a: Ticket, b: Ticket) => (a[sortBy] > b[sortBy] ? 1 : -1));
 
   return (
     <div className="container">
@@ -95,7 +109,7 @@ export default function TicketingSystem() {
       </select>
       
       <h2>Tickets</h2>
-      {filteredTickets.map((ticket) => (
+      {filteredTickets.map((ticket: Ticket) => (
         <div key={ticket.id} className="card">
           <p><strong>Project:</strong> {ticket.projectName}</p>
           <p><strong>Description:</strong> {ticket.description}</p>
