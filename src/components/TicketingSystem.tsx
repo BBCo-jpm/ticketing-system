@@ -1,10 +1,19 @@
 import { useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import "./TicketingSystem.css";
+import { db } from "./config/firebaseConfig";
+import {
+  collection,
+  addDoc,
+  onSnapshot,
+  doc,
+  deleteDoc,
+} from "firebase/firestore";
 
-// Define the Ticket type
+// Define the Ticket type.
+// Note: When using Firestore, we use a string id since Firestore auto-generates document IDs.
 interface Ticket {
-  id: number;
+  id: string;
   projectName: string;
   description: string;
   priority: "Low" | "Medium" | "High";
@@ -14,45 +23,69 @@ interface Ticket {
 }
 
 export default function TicketingSystem() {
-  // NOTE: localStorage is per device/browser.
-  // To share tickets among all users, you'll need a centralized backend solution.
-  const [tickets, setTickets] = useState<Ticket[]>(() => {
-    const savedTickets = localStorage.getItem("tickets");
-    return savedTickets ? JSON.parse(savedTickets) : [];
-  });
-  const [archivedTickets, setArchivedTickets] = useState<Ticket[]>(() => {
-    const savedArchived = localStorage.getItem("archivedTickets");
-    return savedArchived ? JSON.parse(savedArchived) : [];
-  });
+  const [tickets, setTickets] = useState<Ticket[]>([]);
+  const [archivedTickets, setArchivedTickets] = useState<Ticket[]>([]);
   const [menuOpen, setMenuOpen] = useState(false);
 
+  // Subscribe to the "tickets" collection for active tickets.
   useEffect(() => {
-    localStorage.setItem("tickets", JSON.stringify(tickets));
-    localStorage.setItem("archivedTickets", JSON.stringify(archivedTickets));
-  }, [tickets, archivedTickets]);
+    const unsubscribe = onSnapshot(collection(db, "tickets"), (snapshot) => {
+      const ticketsData = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      })) as Ticket[];
+      setTickets(ticketsData);
+    });
+    return () => unsubscribe();
+  }, []);
 
-  const addTicket = (newTicket: Ticket) => {
-    // Only check for duplicate names if a project name is provided.
+  // Subscribe to the "archivedTickets" collection.
+  useEffect(() => {
+    const unsubscribe = onSnapshot(collection(db, "archivedTickets"), (snapshot) => {
+      const archivedData = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      })) as Ticket[];
+      setArchivedTickets(archivedData);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  const addTicket = async (newTicket: Ticket) => {
+    // Check for duplicate project names if provided.
     if (
       newTicket.projectName &&
-      tickets.some(ticket => ticket.projectName === newTicket.projectName)
+      tickets.some((ticket) => ticket.projectName === newTicket.projectName)
     ) {
       alert("A ticket with this project name already exists.");
       return;
     }
-    setTickets([...tickets, { ...newTicket, id: Date.now() }]);
+    try {
+      await addDoc(collection(db, "tickets"), newTicket);
+    } catch (error) {
+      console.error("Error adding ticket: ", error);
+    }
   };
 
-  const archiveTicket = (id: number) => {
-    const ticketToArchive = tickets.find(ticket => ticket.id === id);
+  const archiveTicket = async (id: string) => {
+    const ticketToArchive = tickets.find((ticket) => ticket.id === id);
     if (!ticketToArchive) return;
-    setArchivedTickets([...archivedTickets, ticketToArchive]);
-    setTickets(tickets.filter(ticket => ticket.id !== id));
+    try {
+      // Add the ticket to the "archivedTickets" collection.
+      await addDoc(collection(db, "archivedTickets"), ticketToArchive);
+      // Delete the ticket from the "tickets" collection.
+      await deleteDoc(doc(db, "tickets", id));
+    } catch (error) {
+      console.error("Error archiving ticket: ", error);
+    }
   };
 
-  // Function to delete an archived ticket
-  const deleteArchivedTicket = (id: number) => {
-    setArchivedTickets(archivedTickets.filter(ticket => ticket.id !== id));
+  const deleteArchivedTicket = async (id: string) => {
+    try {
+      await deleteDoc(doc(db, "archivedTickets", id));
+    } catch (error) {
+      console.error("Error deleting archived ticket: ", error);
+    }
   };
 
   return (
@@ -94,7 +127,7 @@ export default function TicketingSystem() {
 
 function CreateTicket({ addTicket }: { addTicket: (ticket: Ticket) => void }) {
   const [newTicket, setNewTicket] = useState<Ticket>({
-    id: 0,
+    id: "",
     projectName: "",
     description: "",
     priority: "Medium",
@@ -113,18 +146,8 @@ function CreateTicket({ addTicket }: { addTicket: (ticket: Ticket) => void }) {
   return (
     <div className="card">
       <h2>Create New Ticket</h2>
-      <input
-        placeholder="Project Name"
-        name="projectName"
-        value={newTicket.projectName}
-        onChange={handleInputChange}
-      />
-      <textarea
-        placeholder="Description"
-        name="description"
-        value={newTicket.description}
-        onChange={handleInputChange}
-      />
+      <input placeholder="Project Name" name="projectName" value={newTicket.projectName} onChange={handleInputChange} />
+      <textarea placeholder="Description" name="description" value={newTicket.description} onChange={handleInputChange} />
       <select name="priority" value={newTicket.priority} onChange={handleInputChange}>
         <option value="Low">Low</option>
         <option value="Medium">Medium</option>
@@ -135,12 +158,7 @@ function CreateTicket({ addTicket }: { addTicket: (ticket: Ticket) => void }) {
         <option value="In Progress">In Progress</option>
         <option value="Closed">Closed</option>
       </select>
-      <input
-        placeholder="Assigned To"
-        name="assignedTo"
-        value={newTicket.assignedTo}
-        onChange={handleInputChange}
-      />
+      <input placeholder="Assigned To" name="assignedTo" value={newTicket.assignedTo} onChange={handleInputChange} />
       <input type="date" name="dueDate" value={newTicket.dueDate} onChange={handleInputChange} />
       <button onClick={() => addTicket(newTicket)}>Add Ticket</button>
     </div>
@@ -152,17 +170,16 @@ function Tickets({
   archiveTicket,
 }: {
   tickets: Ticket[];
-  archiveTicket: (id: number) => void;
+  archiveTicket: (id: string) => void;
 }) {
-  const [expandedTicket, setExpandedTicket] = useState<number | null>(null);
+  const [expandedTicket, setExpandedTicket] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [filter, setFilter] = useState({ status: "", priority: "" });
 
-  const filteredTickets = tickets.filter(
-    (ticket) =>
-      ticket.projectName.toLowerCase().includes(searchTerm.toLowerCase()) &&
-      (filter.status ? ticket.status === filter.status : true) &&
-      (filter.priority ? ticket.priority === filter.priority : true)
+  const filteredTickets = tickets.filter((ticket) =>
+    ticket.projectName.toLowerCase().includes(searchTerm.toLowerCase()) &&
+    (filter.status ? ticket.status === filter.status : true) &&
+    (filter.priority ? ticket.priority === filter.priority : true)
   );
 
   return (
@@ -228,17 +245,16 @@ function ArchivedTickets({
   deleteArchivedTicket,
 }: {
   archivedTickets: Ticket[];
-  deleteArchivedTicket: (id: number) => void;
+  deleteArchivedTicket: (id: string) => void;
 }) {
-  const [expandedTicket, setExpandedTicket] = useState<number | null>(null);
+  const [expandedTicket, setExpandedTicket] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [filter, setFilter] = useState({ status: "", priority: "" });
 
-  const filteredArchived = archivedTickets.filter(
-    (ticket) =>
-      ticket.projectName.toLowerCase().includes(searchTerm.toLowerCase()) &&
-      (filter.status ? ticket.status === filter.status : true) &&
-      (filter.priority ? ticket.priority === filter.priority : true)
+  const filteredArchived = archivedTickets.filter((ticket) =>
+    ticket.projectName.toLowerCase().includes(searchTerm.toLowerCase()) &&
+    (filter.status ? ticket.status === filter.status : true) &&
+    (filter.priority ? ticket.priority === filter.priority : true)
   );
 
   return (
