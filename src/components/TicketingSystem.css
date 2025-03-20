@@ -6,15 +6,11 @@ body, html {
     height: 100%;
     background-color: #f4f4f4;
     font-family: Arial, sans-serif;
-    display: flex;
-    justify-content: center;
-    align-items: center;
   }
   
   /* Ensure the main container spans full width */
   .container {
     width: 100%;
-    max-width: 1200px;
     min-height: 100vh;
     display: flex;
     flex-direction: column;
@@ -31,14 +27,17 @@ body, html {
     background-color: #004080;
     color: white;
     padding: 15px 20px;
+    box-sizing: border-box;
   }
   
+  /* Ensure title is on the right */
   .title {
     font-size: 28px;
     font-weight: bold;
+    margin-left: auto;
     margin-right: 20px;
     text-align: right;
-    flex-grow: 1;
+    white-space: nowrap;
   }
   
   /* Menu Button */
@@ -49,6 +48,7 @@ body, html {
     color: white;
     cursor: pointer;
     padding: 10px;
+    margin-right: auto; /* Ensures it's on the far left */
   }
   
   /* Navigation Menu */
