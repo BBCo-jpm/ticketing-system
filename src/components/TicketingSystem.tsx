@@ -44,11 +44,18 @@ export default function TicketingSystem() {
     setTickets(tickets.filter(ticket => ticket.id !== id));
   };
 
+  // New function to delete an archived ticket
+  const deleteArchivedTicket = (id: number) => {
+    setArchivedTickets(archivedTickets.filter(ticket => ticket.id !== id));
+  };
+
   return (
     <Router>
       <div className="container">
         <header className="header">
-          <button className="menu-button" onClick={() => setMenuOpen(!menuOpen)}>&#9776;</button>
+          <button className="menu-button" onClick={() => setMenuOpen(!menuOpen)}>
+            &#9776;
+          </button>
           <h1 className="title">BBCo Workday Ticketing System</h1>
         </header>
         {menuOpen && (
@@ -62,7 +69,10 @@ export default function TicketingSystem() {
           <Routes>
             <Route path="/create" element={<CreateTicket addTicket={addTicket} />} />
             <Route path="/tickets" element={<Tickets tickets={tickets} archiveTicket={archiveTicket} />} />
-            <Route path="/archive" element={<ArchivedTickets archivedTickets={archivedTickets} />} />
+            <Route
+              path="/archive"
+              element={<ArchivedTickets archivedTickets={archivedTickets} deleteArchivedTicket={deleteArchivedTicket} />}
+            />
           </Routes>
         </div>
       </div>
@@ -107,6 +117,7 @@ function CreateTicket({ addTicket }: { addTicket: (ticket: Ticket) => void }) {
     </div>
   );
 }
+
 function Tickets({ tickets, archiveTicket }: { tickets: Ticket[], archiveTicket: (id: number) => void }) {
   const [expandedTicket, setExpandedTicket] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
@@ -156,7 +167,7 @@ function Tickets({ tickets, archiveTicket }: { tickets: Ticket[], archiveTicket:
   );
 }
 
-function ArchivedTickets({ archivedTickets }: { archivedTickets: Ticket[] }) {
+function ArchivedTickets({ archivedTickets, deleteArchivedTicket }: { archivedTickets: Ticket[], deleteArchivedTicket: (id: number) => void }) {
   const [expandedTicket, setExpandedTicket] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [filter, setFilter] = useState({ status: "", priority: "" });
@@ -189,6 +200,7 @@ function ArchivedTickets({ archivedTickets }: { archivedTickets: Ticket[] }) {
           <button onClick={() => setExpandedTicket(expandedTicket === ticket.id ? null : ticket.id)}>
             {expandedTicket === ticket.id ? "Collapse" : "Expand"}
           </button>
+          <button onClick={() => deleteArchivedTicket(ticket.id)}>Delete</button>
           {expandedTicket === ticket.id && (
             <div>
               <p><strong>Description:</strong> {ticket.description}</p>
