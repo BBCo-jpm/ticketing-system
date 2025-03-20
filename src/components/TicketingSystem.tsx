@@ -1,6 +1,7 @@
+// src/components/TicketingSystem.tsx
 import { useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
-import "./TicketingSystem.css";
+import "../TicketingSystem.css";
 import { db } from "../config/firebaseConfig";
 import {
   collection,
@@ -8,6 +9,7 @@ import {
   onSnapshot,
   doc,
   deleteDoc,
+  updateDoc,
 } from "firebase/firestore";
 
 // Define the Ticket type.
@@ -52,10 +54,7 @@ export default function TicketingSystem() {
   }, []);
 
   const addTicket = async (newTicket: Ticket) => {
-    console.log("Attempting to add ticket:", newTicket);
-    // Remove the 'id' field before adding, letting Firestore generate its own ID.
-    const { id, ...ticketData } = newTicket;
-    // Duplicate name check if needed
+    // Check for duplicate project names if provided.
     if (
       newTicket.projectName &&
       tickets.some((ticket) => ticket.projectName === newTicket.projectName)
@@ -64,10 +63,11 @@ export default function TicketingSystem() {
       return;
     }
     try {
+      // Remove the 'id' field before adding, letting Firestore generate its own ID.
+      const { id, ...ticketData } = newTicket;
       await addDoc(collection(db, "tickets"), ticketData);
-      console.log("Ticket successfully added");
     } catch (error) {
-      console.error("Error adding ticket:", error);
+      console.error("Error adding ticket: ", error);
     }
   };
 
@@ -81,6 +81,16 @@ export default function TicketingSystem() {
       await deleteDoc(doc(db, "tickets", id));
     } catch (error) {
       console.error("Error archiving ticket: ", error);
+    }
+  };
+
+  // New function to update the ticket status
+  const updateTicketStatus = async (id: string, newStatus: "Open" | "In Progress" | "Closed") => {
+    try {
+      await updateDoc(doc(db, "tickets", id), { status: newStatus });
+      console.log("Ticket status updated");
+    } catch (error) {
+      console.error("Error updating ticket status: ", error);
     }
   };
 
@@ -117,10 +127,24 @@ export default function TicketingSystem() {
         <div className="content">
           <Routes>
             <Route path="/create" element={<CreateTicket addTicket={addTicket} />} />
-            <Route path="/tickets" element={<Tickets tickets={tickets} archiveTicket={archiveTicket} />} />
+            <Route
+              path="/tickets"
+              element={
+                <Tickets
+                  tickets={tickets}
+                  archiveTicket={archiveTicket}
+                  updateTicketStatus={updateTicketStatus}
+                />
+              }
+            />
             <Route
               path="/archive"
-              element={<ArchivedTickets archivedTickets={archivedTickets} deleteArchivedTicket={deleteArchivedTicket} />}
+              element={
+                <ArchivedTickets
+                  archivedTickets={archivedTickets}
+                  deleteArchivedTicket={deleteArchivedTicket}
+                />
+              }
             />
           </Routes>
         </div>
@@ -172,9 +196,11 @@ function CreateTicket({ addTicket }: { addTicket: (ticket: Ticket) => void }) {
 function Tickets({
   tickets,
   archiveTicket,
+  updateTicketStatus,
 }: {
   tickets: Ticket[];
   archiveTicket: (id: string) => void;
+  updateTicketStatus: (id: string, newStatus: "Open" | "In Progress" | "Closed") => void;
 }) {
   const [expandedTicket, setExpandedTicket] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
@@ -211,11 +237,7 @@ function Tickets({
           <p>
             <strong>Project:</strong> {ticket.projectName}
           </p>
-          <button
-            onClick={() =>
-              setExpandedTicket(expandedTicket === ticket.id ? null : ticket.id)
-            }
-          >
+          <button onClick={() => setExpandedTicket(expandedTicket === ticket.id ? null : ticket.id)}>
             {expandedTicket === ticket.id ? "Collapse" : "Expand"}
           </button>
           {expandedTicket === ticket.id && (
@@ -229,6 +251,17 @@ function Tickets({
               <p>
                 <strong>Status:</strong> {ticket.status}
               </p>
+              {/* Dropdown to update the status */}
+              <select
+                value={ticket.status}
+                onChange={(e) =>
+                  updateTicketStatus(ticket.id, e.target.value as "Open" | "In Progress" | "Closed")
+                }
+              >
+                <option value="Open">Open</option>
+                <option value="In Progress">In Progress</option>
+                <option value="Closed">Closed</option>
+              </select>
               <p>
                 <strong>Assigned To:</strong> {ticket.assignedTo}
               </p>
@@ -286,11 +319,7 @@ function ArchivedTickets({
           <p>
             <strong>Project:</strong> {ticket.projectName}
           </p>
-          <button
-            onClick={() =>
-              setExpandedTicket(expandedTicket === ticket.id ? null : ticket.id)
-            }
-          >
+          <button onClick={() => setExpandedTicket(expandedTicket === ticket.id ? null : ticket.id)}>
             {expandedTicket === ticket.id ? "Collapse" : "Expand"}
           </button>
           <button onClick={() => deleteArchivedTicket(ticket.id)}>Delete</button>
