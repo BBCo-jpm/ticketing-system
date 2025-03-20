@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
-import "../TicketingSystem.css";
+import "./TicketingSystem.css";
 import { db } from "../config/firebaseConfig";
 import {
   collection,
