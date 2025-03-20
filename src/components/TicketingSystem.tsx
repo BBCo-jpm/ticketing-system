@@ -54,7 +54,7 @@ export default function TicketingSystem() {
         <Routes>
           <Route path="/create" element={<CreateTicket addTicket={addTicket} />} />
           <Route path="/tickets" element={<Tickets tickets={tickets} archiveTicket={archiveTicket} />} />
-          <Route path="/archive" element={<Archive archivedTickets={archivedTickets} />} />
+          <Route path="/archive" element={<ArchivedTickets archivedTickets={archivedTickets} />} />
         </Routes>
       </div>
     </Router>
@@ -100,46 +100,28 @@ function CreateTicket({ addTicket }: { addTicket: (ticket: Ticket) => void }) {
 }
 
 function Tickets({ tickets, archiveTicket }: { tickets: Ticket[], archiveTicket: (id: number) => void }) {
-  const [filter, setFilter] = useState<{ status: string; priority: string }>({ status: "", priority: "" });
-  const [searchTerm, setSearchTerm] = useState<string>("");
-
-  const handleFilterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setFilter((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(e.target.value.toLowerCase());
-  };
-
-  const filteredTickets = tickets.filter(ticket =>
-    (filter.status ? ticket.status === filter.status : true) &&
-    (filter.priority ? ticket.priority === filter.priority : true) &&
-    (searchTerm ? ticket.projectName.toLowerCase().includes(searchTerm) || ticket.description.toLowerCase().includes(searchTerm) : true)
-  );
-
   return (
     <div>
-      <h2>Filter & Search Tickets</h2>
-      <input placeholder="Search by project or description" onChange={handleSearchChange} />
-      <select name="status" value={filter.status} onChange={handleFilterChange}>
-        <option value="">All Statuses</option>
-        <option value="Open">Open</option>
-        <option value="In Progress">In Progress</option>
-        <option value="Closed">Closed</option>
-      </select>
-      <select name="priority" value={filter.priority} onChange={handleFilterChange}>
-        <option value="">All Priorities</option>
-        <option value="Low">Low</option>
-        <option value="Medium">Medium</option>
-        <option value="High">High</option>
-      </select>
       <h2>Tickets</h2>
-      {filteredTickets.map(ticket => (
+      {tickets.map(ticket => (
         <div key={ticket.id} className="card">
           <p><strong>Project:</strong> {ticket.projectName}</p>
           <p><strong>Status:</strong> {ticket.status}</p>
           <button onClick={() => archiveTicket(ticket.id)}>Archive</button>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function ArchivedTickets({ archivedTickets }: { archivedTickets: Ticket[] }) {
+  return (
+    <div>
+      <h2>Archived Tickets</h2>
+      {archivedTickets.map(ticket => (
+        <div key={ticket.id} className="card">
+          <p><strong>Project:</strong> {ticket.projectName}</p>
+          <p><strong>Status:</strong> {ticket.status}</p>
         </div>
       ))}
     </div>
