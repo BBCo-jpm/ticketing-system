@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { BrowserRouter as Router, Route, Routes, Link } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import "./TicketingSystem.css";
 
 // Define the Ticket type
@@ -88,10 +88,42 @@ function CreateTicket({ addTicket }: { addTicket: (ticket: Ticket) => void }) {
 }
 
 function Tickets({ tickets, archiveTicket }: { tickets: Ticket[], archiveTicket: (id: number) => void }) {
+  const [filter, setFilter] = useState<{ status: string; priority: string }>({ status: "", priority: "" });
+  const [searchTerm, setSearchTerm] = useState<string>("");
+
+  const handleFilterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFilter((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value.toLowerCase());
+  };
+
+  const filteredTickets = tickets.filter(ticket =>
+    (filter.status ? ticket.status === filter.status : true) &&
+    (filter.priority ? ticket.priority === filter.priority : true) &&
+    (searchTerm ? ticket.projectName.toLowerCase().includes(searchTerm) || ticket.description.toLowerCase().includes(searchTerm) : true)
+  );
+
   return (
     <div>
+      <h2>Filter & Search Tickets</h2>
+      <input placeholder="Search by project or description" onChange={handleSearchChange} />
+      <select name="status" value={filter.status} onChange={handleFilterChange}>
+        <option value="">All Statuses</option>
+        <option value="Open">Open</option>
+        <option value="In Progress">In Progress</option>
+        <option value="Closed">Closed</option>
+      </select>
+      <select name="priority" value={filter.priority} onChange={handleFilterChange}>
+        <option value="">All Priorities</option>
+        <option value="Low">Low</option>
+        <option value="Medium">Medium</option>
+        <option value="High">High</option>
+      </select>
       <h2>Tickets</h2>
-      {tickets.map(ticket => (
+      {filteredTickets.map(ticket => (
         <div key={ticket.id} className="card">
           <p><strong>Project:</strong> {ticket.projectName}</p>
           <p><strong>Status:</strong> {ticket.status}</p>
