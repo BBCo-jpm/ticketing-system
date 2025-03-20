@@ -107,6 +107,54 @@ function CreateTicket({ addTicket }: { addTicket: (ticket: Ticket) => void }) {
     </div>
   );
 }
+function Tickets({ tickets, archiveTicket }: { tickets: Ticket[], archiveTicket: (id: number) => void }) {
+  const [expandedTicket, setExpandedTicket] = useState<number | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filter, setFilter] = useState({ status: "", priority: "" });
+
+  const filteredTickets = tickets.filter(ticket =>
+    ticket.projectName.toLowerCase().includes(searchTerm.toLowerCase()) &&
+    (filter.status ? ticket.status === filter.status : true) &&
+    (filter.priority ? ticket.priority === filter.priority : true)
+  );
+
+  return (
+    <div>
+      <h2>Tickets</h2>
+      <input type="text" placeholder="Search by Project Name" onChange={(e) => setSearchTerm(e.target.value)} />
+      <select onChange={(e) => setFilter({ ...filter, status: e.target.value })}>
+        <option value="">All Statuses</option>
+        <option value="Open">Open</option>
+        <option value="In Progress">In Progress</option>
+        <option value="Closed">Closed</option>
+      </select>
+      <select onChange={(e) => setFilter({ ...filter, priority: e.target.value })}>
+        <option value="">All Priorities</option>
+        <option value="Low">Low</option>
+        <option value="Medium">Medium</option>
+        <option value="High">High</option>
+      </select>
+      {filteredTickets.map(ticket => (
+        <div key={ticket.id} className="card">
+          <p><strong>Project:</strong> {ticket.projectName}</p>
+          <button onClick={() => setExpandedTicket(expandedTicket === ticket.id ? null : ticket.id)}>
+            {expandedTicket === ticket.id ? "Collapse" : "Expand"}
+          </button>
+          {expandedTicket === ticket.id && (
+            <div>
+              <p><strong>Description:</strong> {ticket.description}</p>
+              <p><strong>Priority:</strong> {ticket.priority}</p>
+              <p><strong>Status:</strong> {ticket.status}</p>
+              <p><strong>Assigned To:</strong> {ticket.assignedTo}</p>
+              <p><strong>Due Date:</strong> {ticket.dueDate}</p>
+              <button onClick={() => archiveTicket(ticket.id)}>Archive</button>
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
 
 function ArchivedTickets({ archivedTickets }: { archivedTickets: Ticket[] }) {
   const [expandedTicket, setExpandedTicket] = useState<number | null>(null);
