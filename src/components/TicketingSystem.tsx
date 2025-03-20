@@ -22,6 +22,7 @@ export default function TicketingSystem() {
     const savedArchived = localStorage.getItem("archivedTickets");
     return savedArchived ? JSON.parse(savedArchived) : [];
   });
+  const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
     localStorage.setItem("tickets", JSON.stringify(tickets));
@@ -46,16 +47,24 @@ export default function TicketingSystem() {
   return (
     <Router>
       <div className="container">
-        <nav>
-          <Link to="/create">Create Ticket</Link>
-          <Link to="/tickets">Tickets</Link>
-          <Link to="/archive">Archive</Link>
-        </nav>
-        <Routes>
-          <Route path="/create" element={<CreateTicket addTicket={addTicket} />} />
-          <Route path="/tickets" element={<Tickets tickets={tickets} archiveTicket={archiveTicket} />} />
-          <Route path="/archive" element={<ArchivedTickets archivedTickets={archivedTickets} />} />
-        </Routes>
+        <header className="header">
+          <button className="menu-button" onClick={() => setMenuOpen(!menuOpen)}>&#9776;</button>
+          <h1 className="title">BBCo Workday Ticketing System</h1>
+        </header>
+        {menuOpen && (
+          <nav className="menu">
+            <Link to="/create" onClick={() => setMenuOpen(false)}>Create Ticket</Link>
+            <Link to="/tickets" onClick={() => setMenuOpen(false)}>Tickets</Link>
+            <Link to="/archive" onClick={() => setMenuOpen(false)}>Archive</Link>
+          </nav>
+        )}
+        <div className="content">
+          <Routes>
+            <Route path="/create" element={<CreateTicket addTicket={addTicket} />} />
+            <Route path="/tickets" element={<Tickets tickets={tickets} archiveTicket={archiveTicket} />} />
+            <Route path="/archive" element={<ArchivedTickets archivedTickets={archivedTickets} />} />
+          </Routes>
+        </div>
       </div>
     </Router>
   );
