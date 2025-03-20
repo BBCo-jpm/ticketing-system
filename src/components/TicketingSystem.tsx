@@ -1,7 +1,6 @@
-// src/components/TicketingSystem.tsx
 import { useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
-import "./TicketingSystem.css";
+import "../TicketingSystem.css";
 import { db } from "../config/firebaseConfig";
 import {
   collection,
@@ -48,7 +47,6 @@ export default function TicketingSystem() {
         id: doc.id,
         ...doc.data(),
       })) as Ticket[];
-      console.log("Archived tickets updated:", archivedData);
       setArchivedTickets(archivedData);
     });
     return () => unsubscribe();
@@ -96,12 +94,10 @@ export default function TicketingSystem() {
   };
 
   const deleteArchivedTicket = async (id: string) => {
-    console.log("Attempting to delete archived ticket with id:", id);
     try {
       await deleteDoc(doc(db, "archivedTickets", id));
-      console.log("Archived ticket deleted successfully.");
     } catch (error) {
-      console.error("Error deleting archived ticket:", error);
+      console.error("Error deleting archived ticket: ", error);
     }
   };
 
@@ -157,7 +153,8 @@ export default function TicketingSystem() {
 }
 
 function CreateTicket({ addTicket }: { addTicket: (ticket: Ticket) => void }) {
-  const [newTicket, setNewTicket] = useState<Ticket>({
+  // Define the initial state for a new ticket.
+  const initialTicketState: Ticket = {
     id: "",
     projectName: "",
     description: "",
@@ -165,13 +162,21 @@ function CreateTicket({ addTicket }: { addTicket: (ticket: Ticket) => void }) {
     status: "Open",
     assignedTo: "",
     dueDate: "",
-  });
+  };
+
+  const [newTicket, setNewTicket] = useState<Ticket>(initialTicketState);
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
     setNewTicket((prev) => ({ ...prev, [name]: value }));
+  };
+
+  // Handle add ticket and then reset the form.
+  const handleAddTicket = () => {
+    addTicket(newTicket);
+    setNewTicket(initialTicketState);
   };
 
   return (
@@ -191,7 +196,7 @@ function CreateTicket({ addTicket }: { addTicket: (ticket: Ticket) => void }) {
       </select>
       <input placeholder="Assigned To" name="assignedTo" value={newTicket.assignedTo} onChange={handleInputChange} />
       <input type="date" name="dueDate" value={newTicket.dueDate} onChange={handleInputChange} />
-      <button onClick={() => addTicket(newTicket)}>Add Ticket</button>
+      <button onClick={handleAddTicket}>Add Ticket</button>
     </div>
   );
 }
