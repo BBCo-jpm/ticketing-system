@@ -83,7 +83,7 @@ function CreateTicket({ addTicket }: { addTicket: (ticket: Ticket) => void }) {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setNewTicket(prev => ({ ...prev, [name]: value }));
+    setNewTicket((prev) => ({ ...prev, [name]: value }));
   };
 
   return (
@@ -108,29 +108,48 @@ function CreateTicket({ addTicket }: { addTicket: (ticket: Ticket) => void }) {
   );
 }
 
-function Tickets({ tickets, archiveTicket }: { tickets: Ticket[], archiveTicket: (id: number) => void }) {
-  return (
-    <div>
-      <h2>Tickets</h2>
-      {tickets.map(ticket => (
-        <div key={ticket.id} className="card">
-          <p><strong>Project:</strong> {ticket.projectName}</p>
-          <p><strong>Status:</strong> {ticket.status}</p>
-          <button onClick={() => archiveTicket(ticket.id)}>Archive</button>
-        </div>
-      ))}
-    </div>
-  );
-}
-
 function ArchivedTickets({ archivedTickets }: { archivedTickets: Ticket[] }) {
+  const [expandedTicket, setExpandedTicket] = useState<number | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filter, setFilter] = useState({ status: "", priority: "" });
+
+  const filteredArchived = archivedTickets.filter(ticket =>
+    ticket.projectName.toLowerCase().includes(searchTerm.toLowerCase()) &&
+    (filter.status ? ticket.status === filter.status : true) &&
+    (filter.priority ? ticket.priority === filter.priority : true)
+  );
+
   return (
     <div>
       <h2>Archived Tickets</h2>
-      {archivedTickets.map(ticket => (
+      <input type="text" placeholder="Search by Project Name" onChange={(e) => setSearchTerm(e.target.value)} />
+      <select onChange={(e) => setFilter({ ...filter, status: e.target.value })}>
+        <option value="">All Statuses</option>
+        <option value="Open">Open</option>
+        <option value="In Progress">In Progress</option>
+        <option value="Closed">Closed</option>
+      </select>
+      <select onChange={(e) => setFilter({ ...filter, priority: e.target.value })}>
+        <option value="">All Priorities</option>
+        <option value="Low">Low</option>
+        <option value="Medium">Medium</option>
+        <option value="High">High</option>
+      </select>
+      {filteredArchived.map(ticket => (
         <div key={ticket.id} className="card">
           <p><strong>Project:</strong> {ticket.projectName}</p>
-          <p><strong>Status:</strong> {ticket.status}</p>
+          <button onClick={() => setExpandedTicket(expandedTicket === ticket.id ? null : ticket.id)}>
+            {expandedTicket === ticket.id ? "Collapse" : "Expand"}
+          </button>
+          {expandedTicket === ticket.id && (
+            <div>
+              <p><strong>Description:</strong> {ticket.description}</p>
+              <p><strong>Priority:</strong> {ticket.priority}</p>
+              <p><strong>Status:</strong> {ticket.status}</p>
+              <p><strong>Assigned To:</strong> {ticket.assignedTo}</p>
+              <p><strong>Due Date:</strong> {ticket.dueDate}</p>
+            </div>
+          )}
         </div>
       ))}
     </div>
