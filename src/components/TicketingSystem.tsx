@@ -52,7 +52,10 @@ export default function TicketingSystem() {
   }, []);
 
   const addTicket = async (newTicket: Ticket) => {
-    // Check for duplicate project names if provided.
+    console.log("Attempting to add ticket:", newTicket);
+    // Remove the 'id' field before adding, letting Firestore generate its own ID.
+    const { id, ...ticketData } = newTicket;
+    // Duplicate name check if needed
     if (
       newTicket.projectName &&
       tickets.some((ticket) => ticket.projectName === newTicket.projectName)
@@ -61,9 +64,10 @@ export default function TicketingSystem() {
       return;
     }
     try {
-      await addDoc(collection(db, "tickets"), newTicket);
+      await addDoc(collection(db, "tickets"), ticketData);
+      console.log("Ticket successfully added");
     } catch (error) {
-      console.error("Error adding ticket: ", error);
+      console.error("Error adding ticket:", error);
     }
   };
 
