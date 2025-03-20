@@ -14,6 +14,8 @@ interface Ticket {
 }
 
 export default function TicketingSystem() {
+  // NOTE: localStorage is per device/browser.
+  // To share tickets among all users, you'll need a centralized backend solution.
   const [tickets, setTickets] = useState<Ticket[]>(() => {
     const savedTickets = localStorage.getItem("tickets");
     return savedTickets ? JSON.parse(savedTickets) : [];
@@ -30,7 +32,11 @@ export default function TicketingSystem() {
   }, [tickets, archivedTickets]);
 
   const addTicket = (newTicket: Ticket) => {
-    if (tickets.some(ticket => ticket.projectName === newTicket.projectName)) {
+    // Only check for duplicate names if a project name is provided.
+    if (
+      newTicket.projectName &&
+      tickets.some(ticket => ticket.projectName === newTicket.projectName)
+    ) {
       alert("A ticket with this project name already exists.");
       return;
     }
@@ -44,7 +50,7 @@ export default function TicketingSystem() {
     setTickets(tickets.filter(ticket => ticket.id !== id));
   };
 
-  // New function to delete an archived ticket
+  // Function to delete an archived ticket
   const deleteArchivedTicket = (id: number) => {
     setArchivedTickets(archivedTickets.filter(ticket => ticket.id !== id));
   };
@@ -60,9 +66,15 @@ export default function TicketingSystem() {
         </header>
         {menuOpen && (
           <nav className="menu">
-            <Link to="/create" onClick={() => setMenuOpen(false)}>Create Ticket</Link>
-            <Link to="/tickets" onClick={() => setMenuOpen(false)}>Tickets</Link>
-            <Link to="/archive" onClick={() => setMenuOpen(false)}>Archive</Link>
+            <Link to="/create" onClick={() => setMenuOpen(false)}>
+              Create Ticket
+            </Link>
+            <Link to="/tickets" onClick={() => setMenuOpen(false)}>
+              Tickets
+            </Link>
+            <Link to="/archive" onClick={() => setMenuOpen(false)}>
+              Archive
+            </Link>
           </nav>
         )}
         <div className="content">
@@ -91,7 +103,9 @@ function CreateTicket({ addTicket }: { addTicket: (ticket: Ticket) => void }) {
     dueDate: "",
   });
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+  ) => {
     const { name, value } = e.target;
     setNewTicket((prev) => ({ ...prev, [name]: value }));
   };
@@ -99,8 +113,18 @@ function CreateTicket({ addTicket }: { addTicket: (ticket: Ticket) => void }) {
   return (
     <div className="card">
       <h2>Create New Ticket</h2>
-      <input placeholder="Project Name" name="projectName" value={newTicket.projectName} onChange={handleInputChange} />
-      <textarea placeholder="Description" name="description" value={newTicket.description} onChange={handleInputChange} />
+      <input
+        placeholder="Project Name"
+        name="projectName"
+        value={newTicket.projectName}
+        onChange={handleInputChange}
+      />
+      <textarea
+        placeholder="Description"
+        name="description"
+        value={newTicket.description}
+        onChange={handleInputChange}
+      />
       <select name="priority" value={newTicket.priority} onChange={handleInputChange}>
         <option value="Low">Low</option>
         <option value="Medium">Medium</option>
@@ -111,28 +135,44 @@ function CreateTicket({ addTicket }: { addTicket: (ticket: Ticket) => void }) {
         <option value="In Progress">In Progress</option>
         <option value="Closed">Closed</option>
       </select>
-      <input placeholder="Assigned To" name="assignedTo" value={newTicket.assignedTo} onChange={handleInputChange} />
+      <input
+        placeholder="Assigned To"
+        name="assignedTo"
+        value={newTicket.assignedTo}
+        onChange={handleInputChange}
+      />
       <input type="date" name="dueDate" value={newTicket.dueDate} onChange={handleInputChange} />
       <button onClick={() => addTicket(newTicket)}>Add Ticket</button>
     </div>
   );
 }
 
-function Tickets({ tickets, archiveTicket }: { tickets: Ticket[], archiveTicket: (id: number) => void }) {
+function Tickets({
+  tickets,
+  archiveTicket,
+}: {
+  tickets: Ticket[];
+  archiveTicket: (id: number) => void;
+}) {
   const [expandedTicket, setExpandedTicket] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [filter, setFilter] = useState({ status: "", priority: "" });
 
-  const filteredTickets = tickets.filter(ticket =>
-    ticket.projectName.toLowerCase().includes(searchTerm.toLowerCase()) &&
-    (filter.status ? ticket.status === filter.status : true) &&
-    (filter.priority ? ticket.priority === filter.priority : true)
+  const filteredTickets = tickets.filter(
+    (ticket) =>
+      ticket.projectName.toLowerCase().includes(searchTerm.toLowerCase()) &&
+      (filter.status ? ticket.status === filter.status : true) &&
+      (filter.priority ? ticket.priority === filter.priority : true)
   );
 
   return (
     <div>
       <h2>Tickets</h2>
-      <input type="text" placeholder="Search by Project Name" onChange={(e) => setSearchTerm(e.target.value)} />
+      <input
+        type="text"
+        placeholder="Search by Project Name"
+        onChange={(e) => setSearchTerm(e.target.value)}
+      />
       <select onChange={(e) => setFilter({ ...filter, status: e.target.value })}>
         <option value="">All Statuses</option>
         <option value="Open">Open</option>
@@ -145,19 +185,35 @@ function Tickets({ tickets, archiveTicket }: { tickets: Ticket[], archiveTicket:
         <option value="Medium">Medium</option>
         <option value="High">High</option>
       </select>
-      {filteredTickets.map(ticket => (
+      {filteredTickets.map((ticket) => (
         <div key={ticket.id} className="card">
-          <p><strong>Project:</strong> {ticket.projectName}</p>
-          <button onClick={() => setExpandedTicket(expandedTicket === ticket.id ? null : ticket.id)}>
+          <p>
+            <strong>Project:</strong> {ticket.projectName}
+          </p>
+          <button
+            onClick={() =>
+              setExpandedTicket(expandedTicket === ticket.id ? null : ticket.id)
+            }
+          >
             {expandedTicket === ticket.id ? "Collapse" : "Expand"}
           </button>
           {expandedTicket === ticket.id && (
             <div>
-              <p><strong>Description:</strong> {ticket.description}</p>
-              <p><strong>Priority:</strong> {ticket.priority}</p>
-              <p><strong>Status:</strong> {ticket.status}</p>
-              <p><strong>Assigned To:</strong> {ticket.assignedTo}</p>
-              <p><strong>Due Date:</strong> {ticket.dueDate}</p>
+              <p>
+                <strong>Description:</strong> {ticket.description}
+              </p>
+              <p>
+                <strong>Priority:</strong> {ticket.priority}
+              </p>
+              <p>
+                <strong>Status:</strong> {ticket.status}
+              </p>
+              <p>
+                <strong>Assigned To:</strong> {ticket.assignedTo}
+              </p>
+              <p>
+                <strong>Due Date:</strong> {ticket.dueDate}
+              </p>
               <button onClick={() => archiveTicket(ticket.id)}>Archive</button>
             </div>
           )}
@@ -167,21 +223,32 @@ function Tickets({ tickets, archiveTicket }: { tickets: Ticket[], archiveTicket:
   );
 }
 
-function ArchivedTickets({ archivedTickets, deleteArchivedTicket }: { archivedTickets: Ticket[], deleteArchivedTicket: (id: number) => void }) {
+function ArchivedTickets({
+  archivedTickets,
+  deleteArchivedTicket,
+}: {
+  archivedTickets: Ticket[];
+  deleteArchivedTicket: (id: number) => void;
+}) {
   const [expandedTicket, setExpandedTicket] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [filter, setFilter] = useState({ status: "", priority: "" });
 
-  const filteredArchived = archivedTickets.filter(ticket =>
-    ticket.projectName.toLowerCase().includes(searchTerm.toLowerCase()) &&
-    (filter.status ? ticket.status === filter.status : true) &&
-    (filter.priority ? ticket.priority === filter.priority : true)
+  const filteredArchived = archivedTickets.filter(
+    (ticket) =>
+      ticket.projectName.toLowerCase().includes(searchTerm.toLowerCase()) &&
+      (filter.status ? ticket.status === filter.status : true) &&
+      (filter.priority ? ticket.priority === filter.priority : true)
   );
 
   return (
     <div>
       <h2>Archived Tickets</h2>
-      <input type="text" placeholder="Search by Project Name" onChange={(e) => setSearchTerm(e.target.value)} />
+      <input
+        type="text"
+        placeholder="Search by Project Name"
+        onChange={(e) => setSearchTerm(e.target.value)}
+      />
       <select onChange={(e) => setFilter({ ...filter, status: e.target.value })}>
         <option value="">All Statuses</option>
         <option value="Open">Open</option>
@@ -194,20 +261,36 @@ function ArchivedTickets({ archivedTickets, deleteArchivedTicket }: { archivedTi
         <option value="Medium">Medium</option>
         <option value="High">High</option>
       </select>
-      {filteredArchived.map(ticket => (
+      {filteredArchived.map((ticket) => (
         <div key={ticket.id} className="card">
-          <p><strong>Project:</strong> {ticket.projectName}</p>
-          <button onClick={() => setExpandedTicket(expandedTicket === ticket.id ? null : ticket.id)}>
+          <p>
+            <strong>Project:</strong> {ticket.projectName}
+          </p>
+          <button
+            onClick={() =>
+              setExpandedTicket(expandedTicket === ticket.id ? null : ticket.id)
+            }
+          >
             {expandedTicket === ticket.id ? "Collapse" : "Expand"}
           </button>
           <button onClick={() => deleteArchivedTicket(ticket.id)}>Delete</button>
           {expandedTicket === ticket.id && (
             <div>
-              <p><strong>Description:</strong> {ticket.description}</p>
-              <p><strong>Priority:</strong> {ticket.priority}</p>
-              <p><strong>Status:</strong> {ticket.status}</p>
-              <p><strong>Assigned To:</strong> {ticket.assignedTo}</p>
-              <p><strong>Due Date:</strong> {ticket.dueDate}</p>
+              <p>
+                <strong>Description:</strong> {ticket.description}
+              </p>
+              <p>
+                <strong>Priority:</strong> {ticket.priority}
+              </p>
+              <p>
+                <strong>Status:</strong> {ticket.status}
+              </p>
+              <p>
+                <strong>Assigned To:</strong> {ticket.assignedTo}
+              </p>
+              <p>
+                <strong>Due Date:</strong> {ticket.dueDate}
+              </p>
             </div>
           )}
         </div>
