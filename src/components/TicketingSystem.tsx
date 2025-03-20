@@ -48,6 +48,7 @@ export default function TicketingSystem() {
         id: doc.id,
         ...doc.data(),
       })) as Ticket[];
+      console.log("Archived tickets updated:", archivedData);
       setArchivedTickets(archivedData);
     });
     return () => unsubscribe();
@@ -100,7 +101,7 @@ export default function TicketingSystem() {
       await deleteDoc(doc(db, "archivedTickets", id));
       console.log("Archived ticket deleted successfully.");
     } catch (error) {
-      console.error("Error deleting archived ticket: ", error);
+      console.error("Error deleting archived ticket:", error);
     }
   };
 
