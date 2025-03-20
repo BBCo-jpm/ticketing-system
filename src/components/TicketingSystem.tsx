@@ -1,9 +1,5 @@
 import { useState, useEffect } from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectItem } from "@/components/ui/select";
+import "./TicketingSystem.css";
 
 export default function TicketingSystem() {
   const [tickets, setTickets] = useState(() => {
@@ -56,60 +52,58 @@ export default function TicketingSystem() {
   ).sort((a, b) => a[sortBy] > b[sortBy] ? 1 : -1);
 
   return (
-    <div className="p-4">
-      <h1 className="text-2xl font-bold mb-4">Ticketing System</h1>
+    <div className="container">
+      <h1>Ticketing System</h1>
       
-      <Card className="p-4 mb-4">
-        <h2 className="text-xl font-semibold mb-2">Create New Ticket</h2>
-        <Input placeholder="Project Name" name="projectName" value={newTicket.projectName} onChange={handleInputChange} className="mb-2" />
-        <Textarea placeholder="Description" name="description" value={newTicket.description} onChange={handleInputChange} className="mb-2" />
-        <Select name="priority" value={newTicket.priority} onChange={handleInputChange} className="mb-2">
-          <SelectItem value="Low">Low</SelectItem>
-          <SelectItem value="Medium">Medium</SelectItem>
-          <SelectItem value="High">High</SelectItem>
-        </Select>
-        <Select name="status" value={newTicket.status} onChange={handleInputChange} className="mb-2">
-          <SelectItem value="Open">Open</SelectItem>
-          <SelectItem value="In Progress">In Progress</SelectItem>
-          <SelectItem value="Closed">Closed</SelectItem>
-        </Select>
-        <Input placeholder="Assigned To" name="assignedTo" value={newTicket.assignedTo} onChange={handleInputChange} className="mb-2" />
-        <Input type="date" name="dueDate" value={newTicket.dueDate} onChange={handleInputChange} className="mb-2" />
-        <Button onClick={addTicket}>Add Ticket</Button>
-      </Card>
+      <div className="card">
+        <h2>Create New Ticket</h2>
+        <input placeholder="Project Name" name="projectName" value={newTicket.projectName} onChange={handleInputChange} />
+        <textarea placeholder="Description" name="description" value={newTicket.description} onChange={handleInputChange} />
+        <select name="priority" value={newTicket.priority} onChange={handleInputChange}>
+          <option value="Low">Low</option>
+          <option value="Medium">Medium</option>
+          <option value="High">High</option>
+        </select>
+        <select name="status" value={newTicket.status} onChange={handleInputChange}>
+          <option value="Open">Open</option>
+          <option value="In Progress">In Progress</option>
+          <option value="Closed">Closed</option>
+        </select>
+        <input placeholder="Assigned To" name="assignedTo" value={newTicket.assignedTo} onChange={handleInputChange} />
+        <input type="date" name="dueDate" value={newTicket.dueDate} onChange={handleInputChange} />
+        <button onClick={addTicket}>Add Ticket</button>
+      </div>
 
-      <h2 className="text-xl font-semibold mb-2">Filter & Search Tickets</h2>
-      <Input placeholder="Search by project or description" onChange={handleSearchChange} className="mb-2" />
-      <Select name="status" value={filter.status} onChange={handleFilterChange} className="mb-2">
-        <SelectItem value="">All Statuses</SelectItem>
-        <SelectItem value="Open">Open</SelectItem>
-        <SelectItem value="In Progress">In Progress</SelectItem>
-        <SelectItem value="Closed">Closed</SelectItem>
-      </Select>
-      <Select name="priority" value={filter.priority} onChange={handleFilterChange} className="mb-2">
-        <SelectItem value="">All Priorities</SelectItem>
-        <SelectItem value="Low">Low</SelectItem>
-        <SelectItem value="Medium">Medium</SelectItem>
-        <SelectItem value="High">High</SelectItem>
-      </Select>
-      <Select name="sortBy" value={sortBy} onChange={handleSortChange} className="mb-4">
-        <SelectItem value="dueDate">Sort by Due Date</SelectItem>
-        <SelectItem value="priority">Sort by Priority</SelectItem>
-        <SelectItem value="status">Sort by Status</SelectItem>
-      </Select>
+      <h2>Filter & Search Tickets</h2>
+      <input placeholder="Search by project or description" onChange={handleSearchChange} />
+      <select name="status" value={filter.status} onChange={handleFilterChange}>
+        <option value="">All Statuses</option>
+        <option value="Open">Open</option>
+        <option value="In Progress">In Progress</option>
+        <option value="Closed">Closed</option>
+      </select>
+      <select name="priority" value={filter.priority} onChange={handleFilterChange}>
+        <option value="">All Priorities</option>
+        <option value="Low">Low</option>
+        <option value="Medium">Medium</option>
+        <option value="High">High</option>
+      </select>
+      <select name="sortBy" value={sortBy} onChange={handleSortChange}>
+        <option value="dueDate">Sort by Due Date</option>
+        <option value="priority">Sort by Priority</option>
+        <option value="status">Sort by Status</option>
+      </select>
       
-      <h2 className="text-xl font-semibold mb-2">Tickets</h2>
+      <h2>Tickets</h2>
       {filteredTickets.map((ticket) => (
-        <Card key={ticket.id} className="mb-2 p-4">
-          <CardContent>
-            <p><strong>Project:</strong> {ticket.projectName}</p>
-            <p><strong>Description:</strong> {ticket.description}</p>
-            <p><strong>Priority:</strong> {ticket.priority}</p>
-            <p><strong>Status:</strong> {ticket.status}</p>
-            <p><strong>Assigned To:</strong> {ticket.assignedTo}</p>
-            <p><strong>Due Date:</strong> {ticket.dueDate}</p>
-          </CardContent>
-        </Card>
+        <div key={ticket.id} className="card">
+          <p><strong>Project:</strong> {ticket.projectName}</p>
+          <p><strong>Description:</strong> {ticket.description}</p>
+          <p><strong>Priority:</strong> {ticket.priority}</p>
+          <p><strong>Status:</strong> {ticket.status}</p>
+          <p><strong>Assigned To:</strong> {ticket.assignedTo}</p>
+          <p><strong>Due Date:</strong> {ticket.dueDate}</p>
+        </div>
       ))}
     </div>
   );
