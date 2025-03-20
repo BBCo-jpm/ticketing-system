@@ -82,6 +82,18 @@ function CreateTicket({ addTicket }: { addTicket: (ticket: Ticket) => void }) {
       <h2>Create New Ticket</h2>
       <input placeholder="Project Name" name="projectName" value={newTicket.projectName} onChange={handleInputChange} />
       <textarea placeholder="Description" name="description" value={newTicket.description} onChange={handleInputChange} />
+      <select name="priority" value={newTicket.priority} onChange={handleInputChange}>
+        <option value="Low">Low</option>
+        <option value="Medium">Medium</option>
+        <option value="High">High</option>
+      </select>
+      <select name="status" value={newTicket.status} onChange={handleInputChange}>
+        <option value="Open">Open</option>
+        <option value="In Progress">In Progress</option>
+        <option value="Closed">Closed</option>
+      </select>
+      <input placeholder="Assigned To" name="assignedTo" value={newTicket.assignedTo} onChange={handleInputChange} />
+      <input type="date" name="dueDate" value={newTicket.dueDate} onChange={handleInputChange} />
       <button onClick={() => addTicket(newTicket)}>Add Ticket</button>
     </div>
   );
@@ -128,20 +140,6 @@ function Tickets({ tickets, archiveTicket }: { tickets: Ticket[], archiveTicket:
           <p><strong>Project:</strong> {ticket.projectName}</p>
           <p><strong>Status:</strong> {ticket.status}</p>
           <button onClick={() => archiveTicket(ticket.id)}>Archive</button>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function Archive({ archivedTickets }: { archivedTickets: Ticket[] }) {
-  return (
-    <div>
-      <h2>Archived Tickets</h2>
-      {archivedTickets.map(ticket => (
-        <div key={ticket.id} className="card">
-          <p><strong>Project:</strong> {ticket.projectName}</p>
-          <p><strong>Status:</strong> {ticket.status}</p>
         </div>
       ))}
     </div>
