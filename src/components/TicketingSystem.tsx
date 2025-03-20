@@ -95,8 +95,10 @@ export default function TicketingSystem() {
   };
 
   const deleteArchivedTicket = async (id: string) => {
+    console.log("Attempting to delete archived ticket with id:", id);
     try {
       await deleteDoc(doc(db, "archivedTickets", id));
+      console.log("Archived ticket deleted successfully.");
     } catch (error) {
       console.error("Error deleting archived ticket: ", error);
     }
