@@ -32,8 +32,9 @@ export default function TicketingSystem() {
       const ticketsData = snapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
-      })) as Ticket[];
-      setTickets(ticketsData);
+      }));
+      console.log("Fetched tickets:", ticketsData); // Debug output
+      setTickets(ticketsData as Ticket[]);
     });
     return () => unsubscribe();
   }, []);
