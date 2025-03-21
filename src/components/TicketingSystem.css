@@ -1,123 +1,161 @@
 /* General Styling */
 body, html {
-    margin: 0;
-    padding: 0;
-    width: 100%;
-    height: 100%;
-    background-color: #f4f4f4;
-    font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #f4f4f4;
+  font-family: Arial, sans-serif;
+}
+
+/* Ensure the main container spans full width */
+.container {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+/* Header - Full Width */
+.header {
+  width: 100%;
+  height: 60px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #004080;
+  color: white;
+  padding: 0 20px;
+  box-sizing: border-box;
+}
+
+/* Ensure title is on the right */
+.title {
+  font-size: 24px;
+  font-weight: bold;
+  margin-left: auto;
+  white-space: nowrap;
+}
+
+/* Menu Button - Left Aligned */
+.menu-button {
+  font-size: 28px;
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  padding: 10px;
+  margin-right: auto;
+}
+
+/* Navigation Menu */
+.menu {
+  position: absolute;
+  top: 60px;
+  left: 10px;
+  background: white;
+  width: 250px;
+  box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.2);
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+}
+
+.menu a {
+  text-decoration: none;
+  color: #004080;
+  padding: 12px;
+  font-size: 18px;
+  display: block;
+  text-align: left;
+}
+
+.menu a:hover {
+  background-color: #e0e0e0;
+}
+
+/* Main Content */
+.content {
+  width: 100%;
+  max-width: 900px;
+  text-align: center;
+  margin-top: 20px;
+}
+
+/* Center cards */
+.card {
+  background: white;
+  padding: 20px;
+  margin: 20px auto;
+  border-radius: 8px;
+  box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 600px;
+  text-align: left;
+}
+
+/* Form Elements */
+input, textarea, select {
+  width: 100%;
+  padding: 10px;
+  margin: 5px 0;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+button {
+  background-color: #004080;
+  color: white;
+  border: none;
+  padding: 10px;
+  margin-top: 10px;
+  cursor: pointer;
+  width: 100%;
+  border-radius: 5px;
+  font-size: 16px;
+}
+
+button:hover {
+  background-color: #002a5c;
+}
+
+/* Dark Mode Styles */
+@media (prefers-color-scheme: dark) {
+  body, html {
+      background-color: #121212;
+      color: #e0e0e0;
   }
-  
-  /* Ensure the main container spans full width */
-  .container {
-    width: 100%;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-start;
-  }
-  
-  /* Header - Full Width */
   .header {
-    width: 100%;
-    height: 60px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background-color: #004080;
-    color: white;
-    padding: 0 20px;
-    box-sizing: border-box;
+      background-color: #1f1f1f;
+      color: #e0e0e0;
   }
-  
-  /* Ensure title is on the right */
-  .title {
-    font-size: 24px;
-    font-weight: bold;
-    margin-left: auto;
-    white-space: nowrap;
-  }
-  
-  /* Menu Button - Left Aligned */
-  .menu-button {
-    font-size: 28px;
-    background: none;
-    border: none;
-    color: white;
-    cursor: pointer;
-    padding: 10px;
-    margin-right: auto;
-  }
-  
-  /* Navigation Menu */
   .menu {
-    position: absolute;
-    top: 60px;
-    left: 10px;
-    background: white;
-    width: 250px;
-    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.2);
-    padding: 15px;
-    display: flex;
-    flex-direction: column;
+      background: #1f1f1f;
+      box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.5);
   }
-  
   .menu a {
-    text-decoration: none;
-    color: #004080;
-    padding: 12px;
-    font-size: 18px;
-    display: block;
-    text-align: left;
+      color: #e0e0e0;
   }
-  
   .menu a:hover {
-    background-color: #e0e0e0;
+      background-color: #333;
   }
-  
-  /* Main Content */
-  .content {
-    width: 100%;
-    max-width: 900px;
-    text-align: center;
-    margin-top: 20px;
-  }
-  
-  /* Center cards */
   .card {
-    background: white;
-    padding: 20px;
-    margin: 20px auto;
-    border-radius: 8px;
-    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
-    width: 100%;
-    max-width: 600px;
-    text-align: left;
+      background: #1e1e1e;
+      color: #e0e0e0;
+      box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.5);
   }
-  
-  /* Form Elements */
   input, textarea, select {
-    width: 100%;
-    padding: 10px;
-    margin: 5px 0;
-    border: 1px solid #ccc;
-    border-radius: 5px;
+      background: #2c2c2c;
+      color: #e0e0e0;
+      border: 1px solid #444;
   }
-  
   button {
-    background-color: #004080;
-    color: white;
-    border: none;
-    padding: 10px;
-    margin-top: 10px;
-    cursor: pointer;
-    width: 100%;
-    border-radius: 5px;
-    font-size: 16px;
+      background-color: #1f1f1f;
+      color: #e0e0e0;
   }
-  
   button:hover {
-    background-color: #002a5c;
+      background-color: #333;
   }
-  
+}
