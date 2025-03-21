@@ -11,8 +11,7 @@ import {
   updateDoc,
 } from "firebase/firestore";
 
-// Define the Ticket type.
-// Note: When using Firestore, we use a string id since Firestore auto-generates document IDs.
+// Define the Ticket type
 interface Ticket {
   id: string;
   projectName: string;
@@ -28,7 +27,6 @@ export default function TicketingSystem() {
   const [archivedTickets, setArchivedTickets] = useState<Ticket[]>([]);
   const [menuOpen, setMenuOpen] = useState(false);
 
-  // Subscribe to the "tickets" collection for active tickets.
   useEffect(() => {
     const unsubscribe = onSnapshot(collection(db, "tickets"), (snapshot) => {
       const ticketsData = snapshot.docs.map((doc) => ({
@@ -40,7 +38,6 @@ export default function TicketingSystem() {
     return () => unsubscribe();
   }, []);
 
-  // Subscribe to the "archivedTickets" collection.
   useEffect(() => {
     const unsubscribe = onSnapshot(collection(db, "archivedTickets"), (snapshot) => {
       const archivedData = snapshot.docs.map((doc) => ({
@@ -53,98 +50,59 @@ export default function TicketingSystem() {
   }, []);
 
   const addTicket = async (newTicket: Ticket) => {
-    // Check for duplicate project names if provided.
-    if (
-      newTicket.projectName &&
-      tickets.some((ticket) => ticket.projectName === newTicket.projectName)
-    ) {
+    if (newTicket.projectName && tickets.some(t => t.projectName === newTicket.projectName)) {
       alert("A ticket with this project name already exists.");
       return;
     }
-    try {
-      // Remove the 'id' field before adding, letting Firestore generate its own ID.
-      const { id, ...ticketData } = newTicket;
-      await addDoc(collection(db, "tickets"), ticketData);
-    } catch (error) {
-      console.error("Error adding ticket: ", error);
-    }
+    const { id, ...data } = newTicket;
+    await addDoc(collection(db, "tickets"), data);
   };
 
   const archiveTicket = async (id: string) => {
-    const ticketToArchive = tickets.find((ticket) => ticket.id === id);
-    if (!ticketToArchive) return;
-    try {
-      // Add the ticket to the "archivedTickets" collection.
-      await addDoc(collection(db, "archivedTickets"), ticketToArchive);
-      // Delete the ticket from the "tickets" collection.
-      await deleteDoc(doc(db, "tickets", id));
-    } catch (error) {
-      console.error("Error archiving ticket: ", error);
-    }
-  };
-
-  // New function to update the ticket status
-  const updateTicketStatus = async (id: string, newStatus: "Open" | "In Progress" | "Closed") => {
-    try {
-      await updateDoc(doc(db, "tickets", id), { status: newStatus });
-      console.log("Ticket status updated");
-    } catch (error) {
-      console.error("Error updating ticket status: ", error);
-    }
+    const ticket = tickets.find(t => t.id === id);
+    if (!ticket) return;
+    await addDoc(collection(db, "archivedTickets"), ticket);
+    await deleteDoc(doc(db, "tickets", id));
   };
 
   const deleteArchivedTicket = async (id: string) => {
-    try {
-      await deleteDoc(doc(db, "archivedTickets", id));
-    } catch (error) {
-      console.error("Error deleting archived ticket: ", error);
-    }
+    await deleteDoc(doc(db, "archivedTickets", id));
+  };
+
+  const updateTicketStatus = async (id: string, newStatus: Ticket["status"]) => {
+    await updateDoc(doc(db, "tickets", id), { status: newStatus });
   };
 
   return (
     <Router>
       <div className="container">
         <header className="header">
-          <button className="menu-button" onClick={() => setMenuOpen(!menuOpen)}>
-            &#9776;
-          </button>
+          <button className="menu-button" onClick={() => setMenuOpen(!menuOpen)}>&#9776;</button>
           <h1 className="title">BBCo Workday Ticketing System</h1>
         </header>
         {menuOpen && (
           <nav className="menu">
-            <Link to="/create" onClick={() => setMenuOpen(false)}>
-              Create Ticket
-            </Link>
-            <Link to="/tickets" onClick={() => setMenuOpen(false)}>
-              Tickets
-            </Link>
-            <Link to="/archive" onClick={() => setMenuOpen(false)}>
-              Archive
-            </Link>
+            <Link to="/create" onClick={() => setMenuOpen(false)}>Create Ticket</Link>
+            <Link to="/tickets" onClick={() => setMenuOpen(false)}>Tickets</Link>
+            <Link to="/archive" onClick={() => setMenuOpen(false)}>Archive</Link>
           </nav>
         )}
         <div className="content">
           <Routes>
             <Route path="/create" element={<CreateTicket addTicket={addTicket} />} />
-            <Route
-              path="/tickets"
-              element={
-                <Tickets
-                  tickets={tickets}
-                  archiveTicket={archiveTicket}
-                  updateTicketStatus={updateTicketStatus}
-                />
-              }
-            />
-            <Route
-              path="/archive"
-              element={
-                <ArchivedTickets
-                  archivedTickets={archivedTickets}
-                  deleteArchivedTicket={deleteArchivedTicket}
-                />
-              }
-            />
+            <Route path="/tickets" element={
+              <Tickets
+                tickets={tickets}
+                archiveTicket={archiveTicket}
+                updateTicketStatus={updateTicketStatus}
+              />
+            } />
+            <Route path="/archive" element={
+              <ArchivedTickets
+                archivedTickets={archivedTickets}
+                deleteArchivedTicket={deleteArchivedTicket}
+              />
+            } />
           </Routes>
         </div>
       </div>
@@ -153,7 +111,6 @@ export default function TicketingSystem() {
 }
 
 function CreateTicket({ addTicket }: { addTicket: (ticket: Ticket) => void }) {
-  // Define the initial state for a new ticket.
   const initialTicketState: Ticket = {
     id: "",
     projectName: "",
@@ -173,7 +130,6 @@ function CreateTicket({ addTicket }: { addTicket: (ticket: Ticket) => void }) {
     setNewTicket((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Handle add ticket and then reset the form.
   const handleAddTicket = () => {
     addTicket(newTicket);
     setNewTicket(initialTicketState);
@@ -250,16 +206,9 @@ function Tickets({
           </button>
           {expandedTicket === ticket.id && (
             <div>
-              <p>
-                <strong>Description:</strong> {ticket.description}
-              </p>
-              <p>
-                <strong>Priority:</strong> {ticket.priority}
-              </p>
-              <p>
-                <strong>Status:</strong> {ticket.status}
-              </p>
-              {/* Dropdown to update the status */}
+              <p><strong>Description:</strong> {ticket.description}</p>
+              <p><strong>Priority:</strong> {ticket.priority}</p>
+              <p><strong>Status:</strong> {ticket.status}</p>
               <select
                 value={ticket.status}
                 onChange={(e) =>
@@ -270,12 +219,8 @@ function Tickets({
                 <option value="In Progress">In Progress</option>
                 <option value="Closed">Closed</option>
               </select>
-              <p>
-                <strong>Assigned To:</strong> {ticket.assignedTo}
-              </p>
-              <p>
-                <strong>Due Date:</strong> {ticket.dueDate}
-              </p>
+              <p><strong>Assigned To:</strong> {ticket.assignedTo}</p>
+              <p><strong>Due Date:</strong> {ticket.dueDate}</p>
               <button onClick={() => archiveTicket(ticket.id)}>Archive</button>
             </div>
           )}
@@ -333,21 +278,11 @@ function ArchivedTickets({
           <button onClick={() => deleteArchivedTicket(ticket.id)}>Delete</button>
           {expandedTicket === ticket.id && (
             <div>
-              <p>
-                <strong>Description:</strong> {ticket.description}
-              </p>
-              <p>
-                <strong>Priority:</strong> {ticket.priority}
-              </p>
-              <p>
-                <strong>Status:</strong> {ticket.status}
-              </p>
-              <p>
-                <strong>Assigned To:</strong> {ticket.assignedTo}
-              </p>
-              <p>
-                <strong>Due Date:</strong> {ticket.dueDate}
-              </p>
+              <p><strong>Description:</strong> {ticket.description}</p>
+              <p><strong>Priority:</strong> {ticket.priority}</p>
+              <p><strong>Status:</strong> {ticket.status}</p>
+              <p><strong>Assigned To:</strong> {ticket.assignedTo}</p>
+              <p><strong>Due Date:</strong> {ticket.dueDate}</p>
             </div>
           )}
         </div>
