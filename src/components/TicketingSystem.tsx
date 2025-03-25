@@ -27,18 +27,19 @@ export default function TicketingSystem() {
   const [archivedTickets, setArchivedTickets] = useState<Ticket[]>([]);
   const [menuOpen, setMenuOpen] = useState(false);
 
+  // Realtime listener for active tickets
   useEffect(() => {
     const unsubscribe = onSnapshot(collection(db, "tickets"), (snapshot) => {
       const ticketsData = snapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
-      }));
-      console.log("Fetched tickets:", ticketsData); // Debug output
-      setTickets(ticketsData as Ticket[]);
+      })) as Ticket[];
+      setTickets(ticketsData);
     });
     return () => unsubscribe();
   }, []);
 
+  // Realtime listener for archived tickets
   useEffect(() => {
     const unsubscribe = onSnapshot(collection(db, "archivedTickets"), (snapshot) => {
       const archivedData = snapshot.docs.map((doc) => ({
@@ -106,6 +107,12 @@ export default function TicketingSystem() {
             } />
           </Routes>
         </div>
+        {/* Persistent Navigation Bar */}
+        <nav className="persistent-nav">
+          <Link to="/create">Create Ticket</Link>
+          <Link to="/tickets">Tickets</Link>
+          <Link to="/archive">Archive</Link>
+        </nav>
       </div>
     </Router>
   );
